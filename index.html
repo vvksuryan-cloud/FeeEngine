@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FBFBFD">
+<title>FeeOne — Fee & Pricing Engine for Transaction Banking</title>
+<meta name="description" content="Interactive reference and live calculators for a world-class transaction-banking fee engine: ECR, tiering, bundling, clubbing, trade finance and relationship revenue.">
+<style>
+:root{
+  --ink:#0A0B16; --mute:#6B7080; --faint:#9AA0AE;
+  --paper:#FBFBFD; --card:#FFFFFF; --line:#E7E8EF; --line2:#F0F1F6;
+  --accent:#5B5BE8; --accent-ink:#4747C9; --wash:#F4F4FE;
+  --good:#0E8A5F; --good-wash:#EAF6F0;
+  --r:14px; --rs:10px;
+  --shadow:0 1px 2px rgba(10,11,22,.04), 0 8px 24px rgba(10,11,22,.05);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  background:var(--paper); color:var(--ink);
+  font-size:15px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+.num{font-variant-numeric:tabular-nums}
+a{color:var(--accent-ink);text-decoration:none}
+
+/* ---------- header ---------- */
+header{
+  position:sticky;top:0;z-index:50;
+  background:rgba(251,251,253,.82);
+  backdrop-filter:saturate(180%) blur(18px);
+  -webkit-backdrop-filter:saturate(180%) blur(18px);
+  border-bottom:1px solid var(--line);
+}
+.bar{max-width:1060px;margin:0 auto;padding:0 20px;display:flex;align-items:center;gap:18px;height:54px}
+.mark{display:flex;align-items:baseline;gap:8px;flex:none}
+.mark b{font-size:17px;letter-spacing:-.02em}
+.mark span{font-size:11px;color:var(--mute);letter-spacing:.04em;text-transform:uppercase}
+nav{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;flex:1}
+nav::-webkit-scrollbar{display:none}
+nav button{
+  appearance:none;border:0;background:none;cursor:pointer;flex:none;
+  font:inherit;font-size:13.5px;font-weight:500;color:var(--mute);
+  padding:7px 12px;border-radius:999px;transition:color .15s,background .15s;
+  white-space:nowrap;
+}
+nav button:hover{color:var(--ink)}
+nav button[aria-selected="true"]{color:#fff;background:var(--ink)}
+nav button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---------- layout ---------- */
+main{max-width:1060px;margin:0 auto;padding:28px 20px 80px}
+section[role="tabpanel"]{display:none}
+section[role="tabpanel"].on{display:block;animation:rise .35s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){
+  section[role="tabpanel"].on{animation:none}
+  *{transition:none!important}
+}
+
+/* ---------- hero ---------- */
+.hero{padding:30px 0 8px}
+.hero .strip{height:3px;width:64px;border-radius:2px;background:linear-gradient(90deg,var(--accent),#00B3E3);margin-bottom:22px}
+.hero h1{font-size:clamp(28px,5.4vw,42px);font-weight:700;letter-spacing:-.03em;line-height:1.12;max-width:18em}
+.hero p.lede{margin-top:14px;font-size:clamp(15px,2.4vw,17px);color:var(--mute);max-width:42em}
+.hero .stats{display:flex;gap:34px;flex-wrap:wrap;margin-top:28px}
+.hero .stat b{display:block;font-size:24px;letter-spacing:-.02em}
+.hero .stat span{font-size:12.5px;color:var(--mute)}
+
+/* ---------- cards & grids ---------- */
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:repeat(3,1fr)}
+@media(max-width:760px){.g2,.g3{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
+.card h3{font-size:15px;font-weight:600;letter-spacing:-.01em}
+.card .sub{font-size:13px;color:var(--mute);margin-top:3px}
+h2.sec{font-size:21px;font-weight:700;letter-spacing:-.02em;margin:34px 0 6px}
+p.secsub{color:var(--mute);font-size:14px;margin-bottom:16px;max-width:46em}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink);margin-bottom:6px}
+
+/* ---------- segmented control ---------- */
+.seg{display:inline-flex;background:var(--line2);border-radius:11px;padding:3px;gap:2px;max-width:100%;overflow-x:auto}
+.seg button{
+  appearance:none;border:0;background:none;cursor:pointer;font:inherit;
+  font-size:13px;font-weight:500;color:var(--mute);padding:6px 13px;border-radius:8px;
+  white-space:nowrap;transition:all .15s;
+}
+.seg button[aria-selected="true"]{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(10,11,22,.12);font-weight:600}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+/* ---------- forms ---------- */
+.fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:16px}
+.f label{display:block;font-size:11.5px;font-weight:600;color:var(--mute);letter-spacing:.02em;margin-bottom:5px}
+.f input,.f select{
+  width:100%;font:inherit;font-size:16px;color:var(--ink);
+  background:#fff;border:1px solid var(--line);border-radius:var(--rs);
+  padding:9px 11px;font-variant-numeric:tabular-nums;
+  transition:border-color .15s,box-shadow .15s;
+}
+.f input:focus,.f select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(91,91,232,.14)}
+
+/* ---------- resolution trace (signature) ---------- */
+.trace{margin-top:18px;border:1px solid var(--line);border-radius:var(--rs);overflow:hidden;background:#fff}
+.trace .t-head{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--line2);font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--mute)}
+.trace .row{display:flex;justify-content:space-between;gap:14px;padding:9px 14px;border-top:1px solid var(--line2);font-size:13.5px}
+.trace .row .l{color:var(--ink)}
+.trace .row .d{color:var(--faint);font-size:12px}
+.trace .row .v{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:500}
+.trace .row.neg .v{color:var(--good)}
+.trace .row.note{color:var(--mute);font-size:12.5px;background:var(--wash)}
+.trace .row.total{border-top:1.5px solid var(--ink);padding:12px 14px}
+.trace .row.total .l{font-weight:600}
+.trace .row.total .v{font-size:18px;font-weight:700;letter-spacing:-.01em}
+.trace .row.total.good .v{color:var(--good)}
+
+/* ---------- tables ---------- */
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.tbl th{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+.tbl td{padding:9px 10px;border-bottom:1px solid var(--line2);vertical-align:top}
+.tbl tr:last-child td{border-bottom:0}
+.tbl .r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl tbody tr.click{cursor:pointer;transition:background .12s}
+.tbl tbody tr.click:hover{background:var(--wash)}
+.scrollx{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.pill{display:inline-block;font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--line2);color:var(--mute)}
+.pill.acc{background:var(--wash);color:var(--accent-ink)}
+.pill.good{background:var(--good-wash);color:var(--good)}
+
+/* ---------- precedence ladder ---------- */
+.ladder{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.rung{display:flex;align-items:center;gap:13px;border:1px solid var(--line);border-radius:var(--rs);padding:11px 14px;background:#fff}
+.rung .n{flex:none;width:26px;height:26px;border-radius:8px;background:var(--ink);color:#fff;font-size:12.5px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.rung:first-child .n{background:var(--accent)}
+.rung b{font-size:13.5px}
+.rung span{font-size:12.5px;color:var(--mute)}
+
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:13.5px;margin-top:12px}
+.kv dt{color:var(--mute)}
+.kv dd{font-weight:500}
+
+footer{border-top:1px solid var(--line);margin-top:60px}
+footer .inner{max-width:1060px;margin:0 auto;padding:22px 20px;font-size:12.5px;color:var(--mute);display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between}
+.disc{font-size:12px;color:var(--faint);margin-top:10px}
+@media(max-width:560px){
+  .bar{padding:0 12px;gap:10px}
+  main{padding:20px 14px 70px}
+  .card{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar">
+    <div class="mark"><b>FeeOne</b><span>Fee Engine</span></div>
+    <nav role="tablist" aria-label="Sections" id="nav"></nav>
+  </div>
+</header>
+
+<main id="main"></main>
+
+<footer>
+  <div class="inner">
+    <div>FeeOne — consolidated build base · companion to the master document &amp; workbook</div>
+    <div>All rates illustrative — not any institution's negotiated tariff</div>
+  </div>
+</footer>
+
+<script>
+/* ============================================================
+   ENGINE — pure functions, verified against the master document
+   (39 assertions: tiering, packages, clubbing, 4 ECR models,
+    payments, pooling, structures, LC ×2, guarantee, loan, SCF)
+   ============================================================ */
+const FE = {};
+FE.banded = function (vol, bands) {
+  let total = 0; const lines = [];
+  for (const b of bands) {
+    const hi = b.to == null ? Infinity : b.to;
+    const units = Math.max(0, Math.min(vol, hi) - b.from + 1);
+    if (units > 0) { total += units * b.rate; lines.push({ units, rate: b.rate, amt: units * b.rate, from: b.from, to: b.to }); }
+  }
+  return { total, lines };
+};
+FE.tiered = function (vol, bands) {
+  let rate = bands[0].rate;
+  for (const b of bands) { const hi = b.to == null ? Infinity : b.to; if (vol >= b.from && vol <= hi) rate = b.rate; }
+  return { total: vol * rate, rate };
+};
+FE.pkg = function (base, items) {
+  let total = base; const lines = [];
+  for (const it of items) {
+    const over = Math.max(0, it.used - it.allowance);
+    const amt = over * it.overage;
+    total += amt; lines.push({ ...it, over, amt });
+  }
+  return { total, lines };
+};
+FE.club = function (vols, bands) {
+  const per = vols.map(v => FE.banded(v, bands).total);
+  const solo = per.reduce((a, b) => a + b, 0);
+  const agg = vols.reduce((a, b) => a + b, 0);
+  const clubbed = FE.banded(agg, bands).total;
+  return { per, solo, agg, clubbed, saving: solo - clubbed };
+};
+FE.ecrReserve = function (collected, reserve, rate, days, basis, charges) {
+  const investable = collected * (1 - reserve);
+  const credit = investable * rate * days / basis;
+  return { investable, credit, net: Math.max(0, charges - credit), unused: Math.max(0, credit - charges) };
+};
+FE.ecrSimple = function (balance, rate, charges) {
+  const credit = balance * rate / 12;
+  return { credit, net: Math.max(0, charges - credit), unused: Math.max(0, credit - charges) };
+};
+FE.ecrTiered = function (balance, tiers, days, basis) {
+  let rem = balance, total = 0; const lines = [];
+  for (const t of tiers) {
+    const slice = t.size == null ? rem : Math.min(rem, t.size);
+    if (slice <= 0) break;
+    const amt = slice * t.rate * days / basis;
+    total += amt; rem -= slice; lines.push({ slice, rate: t.rate, amt });
+  }
+  return { total, lines };
+};
+FE.ecrHybrid = function (threshold, balance, charges, ecr, intRate) {
+  const allowance = threshold * ecr / 12;
+  const offset = Math.min(allowance, charges);
+  const payout = Math.max(0, allowance - offset);
+  const interest = Math.max(0, balance - threshold) * intRate / 12;
+  return { allowance, offset, payout, interest, clientValue: offset + payout + interest, net: Math.max(0, charges - allowance) };
+};
+FE.payments = function (p) {
+  const lines = [
+    { l: "ACH", d: p.ach.toLocaleString() + " × " + p.achRate, amt: p.ach * p.achRate },
+    { l: "Domestic RTGS — electronic", d: p.rtgs + " × " + p.rtgsRate, amt: p.rtgs * p.rtgsRate },
+    { l: "Repairs (non-STP surcharge)", d: p.repairs + " × " + p.repairRate, amt: p.repairs * p.repairRate },
+    { l: "International — electronic", d: p.intlE + " × " + p.intlERate, amt: p.intlE * p.intlERate },
+    { l: "International — manual", d: p.intlM + " × " + p.intlMRate, amt: p.intlM * p.intlMRate },
+    { l: "Correspondent pass-through", d: (p.intlE + p.intlM) + " × " + p.corrRate, amt: (p.intlE + p.intlM) * p.corrRate },
+  ];
+  const total = lines.reduce((a, x) => a + x.amt, 0);
+  const optim = p.intlM * (p.intlMRate - p.intlERate) + Math.floor(p.repairs / 2) * p.repairRate;
+  return { lines, total, optim };
+};
+FE.pooling = function (offset, debit, credit, feeBps, admin, days, basis) {
+  const benefit = offset * (debit - credit) * days / basis;
+  const fee = offset * feeBps * days / basis + admin;
+  return { benefit, fee, net: benefit - fee };
+};
+FE.structures = function (s) {
+  const oneTime = s.structures * s.implPer + s.multibankSetup;
+  const ongoing = s.domAccts * s.domRate + s.xbAccts * s.xbRate + s.reporting + s.portal + s.mbAccts * s.mbRate;
+  return { oneTime, ongoing, monthOne: oneTime + ongoing };
+};
+FE.lc = function (face, ratePerPeriod, tenorMonths, periodMonths, handling, drawing, drawRate, discrepancy) {
+  const periods = Math.ceil(tenorMonths / periodMonths);
+  const commission = face * ratePerPeriod * periods;
+  const drawFee = drawing * drawRate;
+  return { periods, commission, drawFee, total: commission + handling + drawFee + discrepancy };
+};
+FE.lcMonthly = function (face, ratePerMonth, months, amendment, discrepant, reimb) {
+  const commission = face * ratePerMonth * months;
+  return { commission, total: commission + amendment + discrepant + reimb };
+};
+FE.guarantee = function (face, ratePerMonth, months, amendAmt, amendMonths, amendFee) {
+  const base = face * ratePerMonth * months;
+  const amend = amendAmt * ratePerMonth * amendMonths;
+  return { base, amend, total: base + amend + amendFee };
+};
+FE.loan = function (principal, rate, days, arrRate) {
+  const interest = principal * rate * days / 360;
+  const arr = principal * arrRate;
+  return { interest, arr, total: interest + arr };
+};
+FE.scf = function (invoice, daysEarly, rate) { return { total: invoice * rate * daysEarly / 360 }; };
+</script>
+<script>
+/* ============================================================
+   UI — formatters, tabs, sections, live wiring
+   ============================================================ */
+const $ = (s, el) => (el || document).querySelector(s);
+const $$ = (s, el) => Array.from((el || document).querySelectorAll(s));
+const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+const usd0 = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+const num = new Intl.NumberFormat("en-US");
+const fmt = v => usd.format(v);
+const fmt0 = v => usd0.format(v);
+const pct = v => (v * 100).toLocaleString("en-US", { maximumFractionDigits: 4 }) + "%";
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+/* ---------- shared band table (wires) ---------- */
+const WIRE_BANDS = [{ from: 1, to: 100, rate: 20 }, { from: 101, to: 500, rate: 15 }, { from: 501, to: null, rate: 10 }];
+
+/* ---------- small builders ---------- */
+function field(id, label, val, step) {
+  return `<div class="f"><label for="${id}">${label}</label><input id="${id}" type="number" inputmode="decimal" value="${val}" ${step ? `step="${step}"` : ""}></div>`;
+}
+function traceHTML(title, rows) {
+  let h = `<div class="trace"><div class="t-head"><span>Resolution trace</span><span>${esc(title)}</span></div>`;
+  for (const r of rows) {
+    const cls = ["row", r.kind || ""].join(" ").trim();
+    if (r.kind === "note") { h += `<div class="row note"><span>${esc(r.l)}</span></div>`; continue; }
+    h += `<div class="${cls}"><span class="l">${esc(r.l)}${r.d ? ` <span class="d">${esc(r.d)}</span>` : ""}</span><span class="v">${r.v}</span></div>`;
+  }
+  return h + `</div>`;
+}
+function segHTML(id, opts, sel) {
+  return `<div class="seg" role="tablist" id="${id}">` + opts.map((o, i) =>
+    `<button role="tab" data-i="${i}" aria-selected="${i === sel}">${esc(o)}</button>`).join("") + `</div>`;
+}
+function wireSeg(id, onPick) {
+  $("#" + id).addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    $$("button", $("#" + id)).forEach(x => x.setAttribute("aria-selected", "false"));
+    b.setAttribute("aria-selected", "true");
+    onPick(+b.dataset.i);
+  });
+}
+const V = id => { const x = parseFloat($("#" + id).value); return isFinite(x) ? x : 0; };
+function onInputs(ids, fn) { ids.forEach(id => $("#" + id).addEventListener("input", fn)); fn(); }
+
+/* ============================================================
+   SECTIONS
+   ============================================================ */
+const TABS = [
+  ["overview", "Overview"],
+  ["ecr", "ECR"],
+  ["bundles", "Bundles & Tiers"],
+  ["liquidity", "Payments & Liquidity"],
+  ["trade", "Trade & SCF"],
+  ["cases", "Case Library"],
+  ["revenue", "Revenue"],
+  ["reference", "Reference"],
+];
+
+/* ---------- Overview ---------- */
+function secOverview() {
+  return `
+  <div class="hero">
+    <div class="strip"></div>
+    <h1>One engine. Every fee, every balance, every relationship.</h1>
+    <p class="lede">FeeOne is the build base for a world-class transaction-banking fee &amp; pricing engine — merging the public-record practices of Citi, J.P.&nbsp;Morgan, HSBC, Standard&nbsp;Chartered, Goldman&nbsp;TxB and Morgan&nbsp;Stanley with the capability bar set by Oracle&nbsp;ORMB, Zafin and Finacle. Every rule on this page is computed live by the same verified logic as the master document and workbook.</p>
+    <div class="stats">
+      <div class="stat"><b class="num">6</b><span>simultaneous pricing axes</span></div>
+      <div class="stat"><b class="num">21</b><span>live business cases</span></div>
+      <div class="stat"><b class="num">4</b><span>ECR models</span></div>
+      <div class="stat"><b class="num">3–8%</b><span>fee income lost to leakage (vendor estimate)</span></div>
+    </div>
+  </div>
+
+  <h2 class="sec">The six pricing axes</h2>
+  <p class="secsub">Every charge is a point in this six-dimensional space. The engine resolves each axis from configuration — never code — then prices and explains the event.</p>
+  <div class="grid g3">
+    ${[
+      ["Scope", "Who is charged?", "Group · entity · division · account · account-group · virtual account · product · transaction"],
+      ["Event", "Which action?", "Payment, return, repair, amendment, investigation, statement, LC issuance, sweep, lockbox item"],
+      ["Balance", "Which balances modify it?", "Collected · investable (reserve-adjusted) · overdraft · compensating · threshold · surplus"],
+      ["Time", "What temporal basis?", "One-time · monthly · daily accrual · per-month/quarter commission · part-period proration"],
+      ["Channel", "How was it executed?", "Electronic / API vs manual / assisted · STP vs repaired · correspondent pass-through"],
+      ["Relationship", "What benefits apply?", "Bundles · tiers · rebates · waivers · ECR offset · commitments · total-wallet deals"],
+    ].map(a => `<div class="card"><div class="eyebrow">${a[0]}</div><h3>${a[1]}</h3><p class="sub">${a[2]}</p></div>`).join("")}
+  </div>
+
+  <h2 class="sec">Pricing precedence — most specific wins</h2>
+  <p class="secsub">With prices attachable at many levels, a deterministic stack guarantees exactly one resolved price and one explanation per event.</p>
+  <div class="ladder">
+    ${[
+      ["Client-specific negotiated deal", "“Global Treasury 2026”: wires $12 flat across all entities"],
+      ["Relationship / entity bundle", "Entity A on the ‘Payments Plus’ package"],
+      ["Account package", "Account 123 on a ‘Premium Operating’ plan"],
+      ["Product-country tariff", "USD wire standard tariff for the U.S."],
+      ["Event default", "Catalogue default unit rate"],
+    ].map((r, i) => `<div class="rung"><div class="n num">${i + 1}</div><div><b>${r[0]}</b><br><span>${r[1]}</span></div></div>`).join("")}
+  </div>
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card"><h3>Benefit-stacking modes</h3>
+      <dl class="kv">
+        <dt>Additive</dt><dd>Discounts sum (10% bundle + 5% loyalty = 15%)</dd>
+        <dt>Best-of</dt><dd>Only the single most favourable benefit applies</dd>
+        <dt>Selected-events</dt><dd>Benefit applies only to named services</dd>
+        <dt>Exclusive</dt><dd>Benefits cannot co-apply; precedence selects one</dd>
+      </dl>
+    </div>
+    <div class="card"><h3>Every resolution emits</h3>
+      <dl class="kv">
+        <dt>Rate</dt><dd>The resolved price</dd>
+        <dt>Provenance</dt><dd>Winning layer + rule version</dd>
+        <dt>Stacking</dt><dd>The mode applied</dd>
+        <dt>Bounds</dt><dd>Any floor / cap / minimum that bound it</dd>
+        <dt>Explanation</dt><dd>Plain-language “why this fee applied”</dd>
+      </dl>
+    </div>
+  </div>
+
+  <h2 class="sec">What the leading banks signal</h2>
+  <div class="grid g2">
+    ${[
+      ["Citi", "Global Pricing Engine across 90+ markets; ECR pegged to the 90-day T-bill with no carry-forward; DACA implementation, legal and monthly fees; online vs manual wire differential — one contract holds event, setup, administered-account and balance pricing."],
+      ["J.P. Morgan", "Earnings-credit allowance offsets balance-compensable charges; a formal service-code taxonomy; Brazilian balances incorporated into a Global ECR structure — cross-country balance aggregation is a real requirement."],
+      ["HSBC", "Hybrid Checking: ECR threshold offsets fees, unused credits are paid back, and balances above the threshold earn credit interest — ECR cannot stop at “net fee floored at zero.”"],
+      ["Standard Chartered", "The most explicit public tariff: manual vs electronic, correspondent pass-through, structure-level liquidity fees, and balance-formula pricing (higher of flat or balance × central-bank deposit rate)."],
+      ["Goldman Sachs TxB", "API-first and cloud-native: real-time visibility, self-service price transparency, event-level metering, virtual integrated accounts."],
+      ["Morgan Stanley", "Reserve portfolios, MMFs and reporting for $10m+ balances — reserve-investment services may need a separate fee book within one relationship."],
+    ].map(b => `<div class="card"><h3>${b[0]}</h3><p class="sub">${b[1]}</p></div>`).join("")}
+  </div>
+  <p class="disc">Figures throughout are illustrative, constructed to demonstrate engine mechanics — not any institution's current negotiated tariff.</p>`;
+}
+
+/* ---------- ECR ---------- */
+function secECR() {
+  return `
+  <h2 class="sec">Earnings Credit Rate — four live models</h2>
+  <p class="secsub">ECR is a first-class engine object: classic offset (with or without reserve adjustment), balance-tiered, and hybrid with surplus payout and above-threshold interest. Edit any input — the trace recalculates.</p>
+  ${segHTML("ecrSeg", ["Reserve-adjusted", "Analysed (simple ÷12)", "Balance-tiered", "Hybrid + interest"], 0)}
+  <div id="ecrPanes" style="margin-top:16px">
+    <div class="card" data-pane="0">
+      <h3>Reserve-adjusted ECR</h3><p class="sub">Collected → investable → credit (Act/365); netted against analysed charges. No-carry: unused credit expires.</p>
+      <div class="fields">
+        ${field("er_col", "Avg collected balance", 9000000)}
+        ${field("er_res", "Reserve factor %", 10, "0.5")}
+        ${field("er_rate", "ECR % p.a.", 2.50, "0.05")}
+        ${field("er_days", "Days in period", 30)}
+        ${field("er_basis", "Day-count basis", 365)}
+        ${field("er_chg", "Analysed charges", 15000)}
+      </div>
+      <div id="er_out"></div>
+    </div>
+    <div class="card" data-pane="1" hidden>
+      <h3>Traditional analysed account</h3><p class="sub">Simple monthly convention: allowance = balance × rate ÷ 12, no reserve deduction, no carry-forward.</p>
+      <div class="fields">
+        ${field("es_bal", "Avg eligible balance", 20000000)}
+        ${field("es_rate", "ECR % p.a.", 2.40, "0.05")}
+        ${field("es_chg", "Gross service charges", 31700)}
+      </div>
+      <div id="es_out"></div>
+    </div>
+    <div class="card" data-pane="2" hidden>
+      <h3>Balance-tiered ECR</h3><p class="sub">Marginal bands, exactly like banded fee pricing — the engine reuses the same primitive (Act/365).</p>
+      <div class="fields">
+        ${field("et_bal", "Avg investable balance", 25000000)}
+        ${field("et_r1", "First $5m — ECR %", 1.75, "0.05")}
+        ${field("et_r2", "Next $10m — ECR %", 2.25, "0.05")}
+        ${field("et_r3", "Above $15m — ECR %", 2.75, "0.05")}
+        ${field("et_days", "Days in period", 30)}
+      </div>
+      <div id="et_out"></div>
+    </div>
+    <div class="card" data-pane="3" hidden>
+      <h3>Hybrid ECR + credit interest</h3><p class="sub">HSBC pattern: the threshold's allowance offsets fees, the surplus is credited back, and the balance above the threshold earns interest.</p>
+      <div class="fields">
+        ${field("eh_thr", "ECR threshold balance", 10000000)}
+        ${field("eh_bal", "Actual avg balance", 14000000)}
+        ${field("eh_chg", "Service charges", 12000)}
+        ${field("eh_rate", "ECR % p.a.", 2.20, "0.05")}
+        ${field("eh_int", "Credit interest % p.a.", 1.50, "0.05")}
+      </div>
+      <div id="eh_out"></div>
+    </div>
+  </div>`;
+}
+function wireECR() {
+  wireSeg("ecrSeg", i => $$("#ecrPanes [data-pane]").forEach(p => p.hidden = p.dataset.pane != i));
+  onInputs(["er_col", "er_res", "er_rate", "er_days", "er_basis", "er_chg"], () => {
+    const r = FE.ecrReserve(V("er_col"), V("er_res") / 100, V("er_rate") / 100, V("er_days"), V("er_basis"), V("er_chg"));
+    $("#er_out").innerHTML = traceHTML("Reserve-adjusted", [
+      { l: "Investable balance", d: `collected × (1 − ${V("er_res")}%)`, v: fmt(r.investable) },
+      { l: "Earnings credit", d: `investable × ${V("er_rate")}% × ${V("er_days")}/${V("er_basis")}`, v: fmt(r.credit), kind: "neg" },
+      { l: "Analysed service charges", v: fmt(V("er_chg")) },
+      { l: "Net billed fee", d: "max(0, charges − credit)", v: fmt(r.net), kind: "total " + (r.net === 0 ? "good" : "") },
+      { l: r.unused > 0 ? `Unused credit ${fmt(r.unused)} expires (no-carry). Economic revenue ≠ billed: the deposit still earns a spread.` : `Shortfall billed; credit fully consumed.`, kind: "note" },
+    ]);
+  });
+  onInputs(["es_bal", "es_rate", "es_chg"], () => {
+    const r = FE.ecrSimple(V("es_bal"), V("es_rate") / 100, V("es_chg"));
+    $("#es_out").innerHTML = traceHTML("Simple monthly", [
+      { l: "ECR allowance", d: `balance × ${V("es_rate")}% ÷ 12`, v: fmt(r.credit), kind: "neg" },
+      { l: "Gross service charges", v: fmt(V("es_chg")) },
+      { l: "Net billed fee", v: fmt(r.net), kind: "total " + (r.net === 0 ? "good" : "") },
+      { l: `Unused allowance ${fmt(r.unused)} — a measure of over-compensation the RM can redeploy.`, kind: "note" },
+    ]);
+  });
+  onInputs(["et_bal", "et_r1", "et_r2", "et_r3", "et_days"], () => {
+    const r = FE.ecrTiered(V("et_bal"), [
+      { size: 5000000, rate: V("et_r1") / 100 },
+      { size: 10000000, rate: V("et_r2") / 100 },
+      { size: null, rate: V("et_r3") / 100 }], V("et_days"), 365);
+    const rows = r.lines.map((l, i) => ({
+      l: ["First band", "Second band", "Remainder"][i] || "Band", d: `${fmt0(l.slice)} × ${pct(l.rate)} × ${V("et_days")}/365`, v: fmt(l.amt)
+    }));
+    rows.push({ l: "Total monthly earnings credit", v: fmt(r.total), kind: "total good" });
+    $("#et_out").innerHTML = traceHTML("Balance-tiered", rows);
+  });
+  onInputs(["eh_thr", "eh_bal", "eh_chg", "eh_rate", "eh_int"], () => {
+    const r = FE.ecrHybrid(V("eh_thr"), V("eh_bal"), V("eh_chg"), V("eh_rate") / 100, V("eh_int") / 100);
+    $("#eh_out").innerHTML = traceHTML("Hybrid", [
+      { l: "ECR allowance on threshold", d: `threshold × ${V("eh_rate")}% ÷ 12`, v: fmt(r.allowance) },
+      { l: "Fee offset applied", d: "min(allowance, charges)", v: fmt(r.offset), kind: "neg" },
+      { l: "Surplus credited back to client", v: fmt(r.payout), kind: "neg" },
+      { l: "Credit interest on excess balance", d: `(balance − threshold) × ${V("eh_int")}% ÷ 12`, v: fmt(r.interest), kind: "neg" },
+      { l: "Net billed fee", v: fmt(r.net), kind: r.net === 0 ? "neg" : "" },
+      { l: "Total monthly client value", d: "offset + payout + interest", v: fmt(r.clientValue), kind: "total good" },
+    ]);
+  });
+}
+
+/* ---------- Bundles & Tiers ---------- */
+function secBundles() {
+  return `
+  <h2 class="sec">Bundles, tiers &amp; clubbing</h2>
+  <p class="secsub">The commercial levers that turn a flat tariff into a relationship offer — all first-class objects, resolved by precedence, never ad-hoc overrides.</p>
+  ${segHTML("bSeg", ["Tiered vs banded", "Package + overage", "Clubbing", "Cross-product"], 0)}
+  <div id="bPanes" style="margin-top:16px">
+
+    <div class="card" data-pane="0">
+      <h3>Tiered (retroactive) vs banded (marginal)</h3>
+      <p class="sub">Same volume, same table — materially different bills. The engine stores the mode explicitly and shows it on the statement.</p>
+      <div class="fields">
+        ${field("tb_vol", "Monthly wire volume", 600)}
+        ${field("tb_r1", "Band 1–100 rate", 20, "0.5")}
+        ${field("tb_r2", "Band 101–500 rate", 15, "0.5")}
+        ${field("tb_r3", "Band 501+ rate", 10, "0.5")}
+      </div>
+      <div class="grid g2" style="margin-top:4px"><div id="tb_band"></div><div id="tb_tier"></div></div>
+    </div>
+
+    <div class="card" data-pane="1" hidden>
+      <h3>Entity bundle with allowances &amp; overage</h3>
+      <p class="sub">Charge = base + Σ max(0, used − allowance) × overage. Relationship-level bundles raise stickiness: nothing can be cherry-picked without reopening the package.</p>
+      <div class="fields">
+        ${field("pk_base", "Base subscription / mo", 6000)}
+        ${field("pk_ach", "ACH used", 15000)}${field("pk_achA", "ACH allowance", 12000)}
+        ${field("pk_dw", "Dom. wires used", 360)}${field("pk_dwA", "Dom. allowance", 300)}
+        ${field("pk_iw", "Intl wires used", 65)}${field("pk_iwA", "Intl allowance", 50)}
+        ${field("pk_va", "Virtual accounts", 70)}${field("pk_vaA", "VA allowance", 40)}
+        ${field("pk_st", "Structures", 2)}${field("pk_stA", "Structure allowance", 1)}
+      </div>
+      <div id="pk_out"></div>
+    </div>
+
+    <div class="card" data-pane="2" hidden>
+      <h3>Clubbing — aggregate volumes across entities</h3>
+      <p class="sub">Each entity priced alone vs the group priced on aggregate volume through the same bands (1–100 @ $20 · 101–500 @ $15 · 501+ @ $10). The aggregation-group object also powers cross-country Global ECR pooling.</p>
+      <div class="fields">
+        ${field("cl_e1", "Entity 1 wires", 80)}
+        ${field("cl_e2", "Entity 2 wires", 60)}
+        ${field("cl_e3", "Entity 3 wires", 120)}
+        ${field("cl_e4", "Entity 4 wires", 140)}
+      </div>
+      <div id="cl_out"></div>
+    </div>
+
+    <div class="card" data-pane="3" hidden>
+      <h3>Cross-product clubbing &amp; relationship deal</h3>
+      <p class="sub">Discount earned by holding multiple product families. Holding more families also lifts operating balances — which raises ECR value (shown alongside).</p>
+      <div class="fields">
+        ${field("xp_fee", "Base monthly fee", 3770)}
+        ${field("xp_disc", "Relationship discount %", 20, "1")}
+        ${field("xp_bal", "Investable balance", 20000000)}
+        ${field("xp_uplift", "ECR uplift % p.a.", 0.25, "0.05")}
+      </div>
+      <div id="xp_out"></div>
+    </div>
+  </div>`;
+}
+function wireBundles() {
+  wireSeg("bSeg", i => $$("#bPanes [data-pane]").forEach(p => p.hidden = p.dataset.pane != i));
+  onInputs(["tb_vol", "tb_r1", "tb_r2", "tb_r3"], () => {
+    const bands = [{ from: 1, to: 100, rate: V("tb_r1") }, { from: 101, to: 500, rate: V("tb_r2") }, { from: 501, to: null, rate: V("tb_r3") }];
+    const b = FE.banded(V("tb_vol"), bands), t = FE.tiered(V("tb_vol"), bands);
+    $("#tb_band").innerHTML = traceHTML("Banded — marginal", [
+      ...b.lines.map(l => ({ l: `Band ${l.from}–${l.to == null ? "∞" : l.to}`, d: `${num.format(l.units)} × ${fmt(l.rate)}`, v: fmt(l.amt) })),
+      { l: "Banded total", v: fmt(b.total), kind: "total" },
+    ]);
+    $("#tb_tier").innerHTML = traceHTML("Tiered — retroactive", [
+      { l: "Reached-band rate applies to all units", d: `${num.format(V("tb_vol"))} × ${fmt(t.rate)}`, v: fmt(t.total) },
+      { l: "Tiered total", v: fmt(t.total), kind: "total" },
+      { l: `Difference vs banded: ${fmt(b.total - t.total)} — same volume, same table. Label the mode on the statement.`, kind: "note" },
+    ]);
+  });
+  const pkIds = ["pk_base", "pk_ach", "pk_achA", "pk_dw", "pk_dwA", "pk_iw", "pk_iwA", "pk_va", "pk_vaA", "pk_st", "pk_stA"];
+  onInputs(pkIds, () => {
+    const r = FE.pkg(V("pk_base"), [
+      { name: "ACH", allowance: V("pk_achA"), used: V("pk_ach"), overage: 0.05 },
+      { name: "Domestic wires", allowance: V("pk_dwA"), used: V("pk_dw"), overage: 8 },
+      { name: "International wires", allowance: V("pk_iwA"), used: V("pk_iw"), overage: 20 },
+      { name: "Virtual accounts", allowance: V("pk_vaA"), used: V("pk_va"), overage: 1 },
+      { name: "Liquidity structures", allowance: V("pk_stA"), used: V("pk_st"), overage: 400 },
+    ]);
+    $("#pk_out").innerHTML = traceHTML("Package", [
+      { l: "Base subscription", v: fmt(V("pk_base")) },
+      ...r.lines.map(l => ({ l: `${l.name} overage`, d: `max(0, ${num.format(l.used)} − ${num.format(l.allowance)}) × ${l.overage}`, v: fmt(l.amt) })),
+      { l: "Monthly invoice", v: fmt(r.total), kind: "total" },
+      { l: "Overage rates: $0.05 ACH · $8 dom wire · $20 intl wire · $1 VA · $400 structure.", kind: "note" },
+    ]);
+  });
+  onInputs(["cl_e1", "cl_e2", "cl_e3", "cl_e4"], () => {
+    const r = FE.club([V("cl_e1"), V("cl_e2"), V("cl_e3"), V("cl_e4")], WIRE_BANDS);
+    $("#cl_out").innerHTML = traceHTML("Clubbing", [
+      ...r.per.map((p, i) => ({ l: `Entity ${i + 1} priced alone`, v: fmt(p) })),
+      { l: "Un-clubbed total", v: fmt(r.solo) },
+      { l: "Clubbed — aggregate volume", d: `${num.format(r.agg)} wires through bands`, v: fmt(r.clubbed), kind: "neg" },
+      { l: "Saving from clubbing", v: fmt(r.saving), kind: "total good" },
+    ]);
+  });
+  onInputs(["xp_fee", "xp_disc", "xp_bal", "xp_uplift"], () => {
+    const disc = V("xp_fee") * (1 - V("xp_disc") / 100);
+    const uplift = V("xp_bal") * (V("xp_uplift") / 100) * 30 / 365;
+    $("#xp_out").innerHTML = traceHTML("Cross-product", [
+      { l: "Base fee", v: fmt(V("xp_fee")) },
+      { l: `Relationship discount`, d: `${V("xp_disc")}% for holding payments + liquidity + trade`, v: "−" + fmt(V("xp_fee") - disc), kind: "neg" },
+      { l: "Discounted fee", v: fmt(disc), kind: "total" },
+      { l: "ECR uplift value (implicit benefit)", d: `balance × ${V("xp_uplift")}% × 30/365`, v: "+" + fmt(uplift) + "/mo", kind: "neg" },
+      { l: "Deals are governed objects: scope, overrides, commitments, term, stacking mode, approval — simulated before activation.", kind: "note" },
+    ]);
+  });
+}
+
+/* ---------- Payments & Liquidity ---------- */
+function secLiquidity() {
+  return `
+  <h2 class="sec">Payments, receivables &amp; liquidity</h2>
+  <p class="secsub">Per-item pricing with channel differentials and pass-through; structure-level liquidity fees; notional pooling economics.</p>
+  ${segHTML("lSeg", ["Payments mix", "Notional pooling", "ZBA & structures", "Receivables · VAs · FX"], 0)}
+  <div id="lPanes" style="margin-top:16px">
+
+    <div class="card" data-pane="0">
+      <h3>Monthly payments statement</h3>
+      <p class="sub">Channel is an event attribute: manual prices above electronic; repairs surcharge non-STP; correspondent costs pass through itemised.</p>
+      <div class="fields">
+        ${field("pm_ach", "ACH volume", 25000)}
+        ${field("pm_rtgs", "Domestic RTGS", 180)}
+        ${field("pm_rep", "Repairs", 20)}
+        ${field("pm_ie", "Intl — electronic", 75)}
+        ${field("pm_im", "Intl — manual", 5)}
+      </div>
+      <div id="pm_out"></div>
+    </div>
+
+    <div class="card" data-pane="1" hidden>
+      <h3>Notional pooling</h3>
+      <p class="sub">Debit and credit balances offset for interest without moving cash. The bank charges bps on the offset plus admin; the client keeps the spread benefit.</p>
+      <div class="fields">
+        ${field("np_off", "Offset balance", 18000000)}
+        ${field("np_d", "Debit interest % p.a.", 6.0, "0.1")}
+        ${field("np_c", "Credit interest % p.a.", 1.5, "0.1")}
+        ${field("np_fee", "Pooling fee % p.a.", 0.10, "0.01")}
+        ${field("np_adm", "Admin fee / mo", 500)}
+      </div>
+      <div id="np_out"></div>
+    </div>
+
+    <div class="card" data-pane="2" hidden>
+      <h3>ZBA sweeps &amp; liquidity structures</h3>
+      <p class="sub">Structures carry implementation, per-participating-account maintenance and reporting fees — not plain DDA fees.</p>
+      <div class="fields">
+        ${field("zb_acc", "ZBA sub-accounts", 22)}
+        ${field("zb_days", "Sweep days / mo", 30)}
+        ${field("zb_rate", "Per sweep", 5, "0.5")}
+        ${field("st_dom", "Domestic accounts", 12)}
+        ${field("st_xb", "Cross-border accounts", 6)}
+      </div>
+      <div class="grid g2" style="margin-top:4px"><div id="zb_out"></div><div id="st_out"></div></div>
+    </div>
+
+    <div class="card" data-pane="3" hidden>
+      <h3>Receivables · virtual accounts · FX margin</h3>
+      <div class="fields">
+        ${field("rc_items", "Reconciled items / mo", 30000)}
+        ${field("rc_disc", "Maintenance discount %", 15, "1")}
+        ${field("va_n", "Virtual accounts", 500)}
+        ${field("fx_t", "FX turnover (EUR)", 10000000)}
+        ${field("fx_bps", "Margin (bps)", 15)}
+      </div>
+      <div class="grid g2" style="margin-top:4px"><div id="rc_out"></div><div id="vafx_out"></div></div>
+    </div>
+  </div>`;
+}
+function wireLiquidity() {
+  wireSeg("lSeg", i => $$("#lPanes [data-pane]").forEach(p => p.hidden = p.dataset.pane != i));
+  onInputs(["pm_ach", "pm_rtgs", "pm_rep", "pm_ie", "pm_im"], () => {
+    const r = FE.payments({ ach: V("pm_ach"), achRate: 0.08, rtgs: V("pm_rtgs"), rtgsRate: 5, repairs: V("pm_rep"), repairRate: 20, intlE: V("pm_ie"), intlERate: 18, intlM: V("pm_im"), intlMRate: 40, corrRate: 12 });
+    $("#pm_out").innerHTML = traceHTML("Payments", [
+      ...r.lines.map(x => ({ l: x.l, d: x.d, v: fmt(x.amt) })),
+      { l: "Total payment fees", v: fmt(r.total), kind: "total" },
+      { l: `Engine-surfaced optimisation: route manual wires electronically + halve repairs → save ${fmt(r.optim)}/mo. AI recommends; the calculation stays rule-based.`, kind: "note" },
+    ]);
+  });
+  onInputs(["np_off", "np_d", "np_c", "np_fee", "np_adm"], () => {
+    const r = FE.pooling(V("np_off"), V("np_d") / 100, V("np_c") / 100, V("np_fee") / 100, V("np_adm"), 30, 365);
+    $("#np_out").innerHTML = traceHTML("Pooling — monthly", [
+      { l: "Client net-interest benefit", d: `offset × (${V("np_d")}% − ${V("np_c")}%) × 30/365`, v: fmt(r.benefit), kind: "neg" },
+      { l: "Bank pooling fee", d: `offset × ${V("np_fee")}% × 30/365 + admin`, v: fmt(r.fee) },
+      { l: "Net benefit retained by client", v: fmt(r.net), kind: "total good" },
+    ]);
+  });
+  onInputs(["zb_acc", "zb_days", "zb_rate", "st_dom", "st_xb"], () => {
+    const sweeps = V("zb_acc") * V("zb_days");
+    $("#zb_out").innerHTML = traceHTML("ZBA sweeps", [
+      { l: "Sweeps", d: `${V("zb_acc")} accounts × ${V("zb_days")} days`, v: num.format(sweeps) },
+      { l: "Sweep fees", d: `× ${fmt(V("zb_rate"))}`, v: fmt(sweeps * V("zb_rate")) },
+      { l: "Structure maintenance", v: fmt(500) },
+      { l: "Monthly total", v: fmt(sweeps * V("zb_rate") + 500), kind: "total" },
+    ]);
+    const r = FE.structures({ structures: 2, implPer: 500, multibankSetup: 200, domAccts: V("st_dom"), domRate: 35, xbAccts: V("st_xb"), xbRate: 55, reporting: 100, portal: 200, mbAccts: 6, mbRate: 50 });
+    $("#st_out").innerHTML = traceHTML("Structures", [
+      { l: "Implementation (one-time)", d: "2 structures × $500 + multi-bank $200", v: fmt(r.oneTime) },
+      { l: "Participating accounts", d: `${V("st_dom")} × $35 dom + ${V("st_xb")} × $55 x-border`, v: fmt(V("st_dom") * 35 + V("st_xb") * 55) },
+      { l: "Reporting · portal · multi-bank", v: fmt(100 + 200 + 300) },
+      { l: "Month one", v: fmt(r.monthOne), kind: "total" },
+      { l: "Ongoing monthly", v: fmt(r.ongoing), kind: "total" },
+    ]);
+  });
+  onInputs(["rc_items", "rc_disc", "va_n", "fx_t", "fx_bps"], () => {
+    const items = V("rc_items") * 0.03, maint = 850;
+    $("#rc_out").innerHTML = traceHTML("Receivables", [
+      { l: "Setup (one-time)", d: "enrichment 3,500 + reconciliation 3,500", v: fmt(7000) },
+      { l: "Maintenance", v: fmt(maint) },
+      { l: "Items", d: `${num.format(V("rc_items"))} × $0.03`, v: fmt(items) },
+      { l: "Month one", v: fmt(7000 + maint + items), kind: "total" },
+      { l: "Steady state", d: `with ${V("rc_disc")}% maintenance discount`, v: fmt(maint * (1 - V("rc_disc") / 100) + items), kind: "total" },
+    ]);
+    $("#vafx_out").innerHTML = traceHTML("VAs & FX", [
+      { l: "Virtual accounts", d: `${num.format(V("va_n"))} × $5/mo`, v: fmt(V("va_n") * 5) },
+      { l: "vs 50 physical accounts × $25", v: fmt(1250) },
+      { l: "FX margin (market income)", d: `EUR ${num.format(V("fx_t"))} × ${V("fx_bps")} bps`, v: "EUR " + num.format(Math.round(V("fx_t") * V("fx_bps") / 10000)), kind: "total good" },
+      { l: "FX margin is often the largest relationship revenue line — priced ad valorem, partly off-invoice.", kind: "note" },
+    ]);
+  });
+}
+
+/* ---------- Trade & SCF ---------- */
+function secTrade() {
+  return `
+  <h2 class="sec">Trade finance &amp; supply-chain finance</h2>
+  <p class="secsub">Ad valorem and tenor-based pricing with part-period round-up, lifecycle events, minimums and financing spread.</p>
+  ${segHTML("tSeg", ["Import LC (per quarter)", "Documentary credit (per month)", "Guarantee", "Trade loan & SCF"], 0)}
+  <div id="tPanes" style="margin-top:16px">
+    <div class="card" data-pane="0">
+      <h3>Import LC — quarterly commission, full lifecycle</h3>
+      <p class="sub">Periods = ceiling(tenor ÷ charging period): a part-period rounds up — a frequent leakage point when handled manually.</p>
+      <div class="fields">
+        ${field("la_face", "Face amount", 2000000)}
+        ${field("la_rate", "Commission % / period", 0.20, "0.01")}
+        ${field("la_tenor", "Tenor (months)", 7)}
+        ${field("la_per", "Charging period (months)", 3)}
+        ${field("la_draw", "Drawing amount", 1800000)}
+      </div>
+      <div id="la_out"></div>
+    </div>
+    <div class="card" data-pane="1" hidden>
+      <h3>Documentary credit — monthly commission</h3>
+      <div class="fields">
+        ${field("lb_face", "Face amount", 5000000)}
+        ${field("lb_rate", "Commission % / month", 0.1875, "0.0125")}
+        ${field("lb_months", "Validity (months)", 4)}
+      </div>
+      <div id="lb_out"></div>
+    </div>
+    <div class="card" data-pane="2" hidden>
+      <h3>Bank guarantee — with mid-term amendment</h3>
+      <p class="sub">Guarantee fees are time-based and re-rate on amendment; they may carry tiered minimums and interact with collateral data.</p>
+      <div class="fields">
+        ${field("g_face", "Face amount", 2000000)}
+        ${field("g_rate", "Commission % / month", 0.125, "0.005")}
+        ${field("g_months", "Months outstanding", 6)}
+        ${field("g_amt", "Amendment increase", 300000)}
+        ${field("g_amos", "Months for increase", 2)}
+      </div>
+      <div id="g_out"></div>
+    </div>
+    <div class="card" data-pane="3" hidden>
+      <h3>Trade loan &amp; supply-chain finance — Act/360</h3>
+      <div class="fields">
+        ${field("tl_p", "Loan principal", 1000000)}
+        ${field("tl_r", "All-in rate % p.a.", 6.50, "0.05")}
+        ${field("tl_d", "Days", 90)}
+        ${field("sc_inv", "SCF invoice", 1000000)}
+        ${field("sc_days", "Days early", 45)}
+        ${field("sc_r", "Discount % p.a.", 7.0, "0.1")}
+      </div>
+      <div class="grid g2" style="margin-top:4px"><div id="tl_out"></div><div id="sc_out"></div></div>
+    </div>
+  </div>`;
+}
+function wireTrade() {
+  wireSeg("tSeg", i => $$("#tPanes [data-pane]").forEach(p => p.hidden = p.dataset.pane != i));
+  onInputs(["la_face", "la_rate", "la_tenor", "la_per", "la_draw"], () => {
+    const r = FE.lc(V("la_face"), V("la_rate") / 100, V("la_tenor"), V("la_per"), 150, V("la_draw"), 0.00125, 100);
+    $("#la_out").innerHTML = traceHTML("Import LC", [
+      { l: "Chargeable periods", d: `ceiling(${V("la_tenor")} ÷ ${V("la_per")}) — part rounds up`, v: String(r.periods) },
+      { l: "Opening commission", d: `face × ${V("la_rate")}% × ${r.periods}`, v: fmt(r.commission) },
+      { l: "Handling", v: fmt(150) },
+      { l: "Drawing / negotiation", d: "drawing × 0.125%", v: fmt(r.drawFee) },
+      { l: "Discrepancy", v: fmt(100) },
+      { l: "Total LC fee income", v: fmt(r.total), kind: "total" },
+    ]);
+  });
+  onInputs(["lb_face", "lb_rate", "lb_months"], () => {
+    const r = FE.lcMonthly(V("lb_face"), V("lb_rate") / 100, V("lb_months"), 300, 200, 60);
+    $("#lb_out").innerHTML = traceHTML("Documentary credit", [
+      { l: "Main commission", d: `face × ${V("lb_rate")}% × ${V("lb_months")} mo`, v: fmt(r.commission) },
+      { l: "Amendment", v: fmt(300) }, { l: "Discrepant-bill charge", v: fmt(200) }, { l: "Reimbursement", v: fmt(60) },
+      { l: "Total LC fee income", v: fmt(r.total), kind: "total" },
+    ]);
+  });
+  onInputs(["g_face", "g_rate", "g_months", "g_amt", "g_amos"], () => {
+    const r = FE.guarantee(V("g_face"), V("g_rate") / 100, V("g_months"), V("g_amt"), V("g_amos"), 150);
+    $("#g_out").innerHTML = traceHTML("Guarantee", [
+      { l: "Base commission", d: `face × ${V("g_rate")}% × ${V("g_months")} mo`, v: fmt(r.base) },
+      { l: "Amendment commission", d: `increase × ${V("g_rate")}% × ${V("g_amos")} mo`, v: fmt(r.amend) },
+      { l: "Non-financial amendment fee", v: fmt(150) },
+      { l: "Total guarantee fee income", v: fmt(r.total), kind: "total" },
+    ]);
+  });
+  onInputs(["tl_p", "tl_r", "tl_d", "sc_inv", "sc_days", "sc_r"], () => {
+    const r = FE.loan(V("tl_p"), V("tl_r") / 100, V("tl_d"), 0.00125);
+    $("#tl_out").innerHTML = traceHTML("Trade loan", [
+      { l: "Interest income", d: `principal × ${V("tl_r")}% × ${V("tl_d")}/360`, v: fmt(r.interest) },
+      { l: "Arrangement fee", d: "principal × 0.125%", v: fmt(r.arr) },
+      { l: "Total revenue", v: fmt(r.total), kind: "total" },
+    ]);
+    const s = FE.scf(V("sc_inv"), V("sc_days"), V("sc_r") / 100);
+    $("#sc_out").innerHTML = traceHTML("Supply-chain finance", [
+      { l: "Discount captured", d: `invoice × ${V("sc_r")}% × ${V("sc_days")}/360`, v: fmt(s.total) },
+      { l: "Financing income", v: fmt(s.total), kind: "total" },
+      { l: "Plus a programme platform fee (e.g. bps on funded volume) charged separately.", kind: "note" },
+    ]);
+  });
+}
+
+/* ---------- Case Library ---------- */
+function casesData() {
+  const c = FE.club([80, 60, 120, 140], WIRE_BANDS);
+  const er = FE.ecrReserve(9000000, .10, .025, 30, 365, 15000);
+  const es = FE.ecrSimple(20000000, .024, 31700);
+  const et = FE.ecrTiered(25000000, [{ size: 5e6, rate: .0175 }, { size: 1e7, rate: .0225 }, { size: null, rate: .0275 }], 30, 365);
+  const eh = FE.ecrHybrid(1e7, 14e6, 12000, .022, .015);
+  const pay = FE.payments({ ach: 25000, achRate: .08, rtgs: 180, rtgsRate: 5, repairs: 20, repairRate: 20, intlE: 75, intlERate: 18, intlM: 5, intlMRate: 40, corrRate: 12 });
+  const pool = FE.pooling(18e6, .06, .015, .001, 500, 30, 365);
+  const st = FE.structures({ structures: 2, implPer: 500, multibankSetup: 200, domAccts: 12, domRate: 35, xbAccts: 6, xbRate: 55, reporting: 100, portal: 200, mbAccts: 6, mbRate: 50 });
+  const lcA = FE.lc(2e6, .002, 7, 3, 150, 1.8e6, .00125, 100);
+  const lcB = FE.lcMonthly(5e6, .001875, 4, 300, 200, 60);
+  const g = FE.guarantee(2e6, .00125, 6, 3e5, 2, 150);
+  const ln = FE.loan(1e6, .065, 90, .00125);
+  return [
+    ["Tiered wires (retroactive)", "600 wires · $20/$15/$10", fmt0(FE.tiered(600, WIRE_BANDS).total), "bundles"],
+    ["Banded wires (marginal)", "Same volume, same table", fmt0(FE.banded(600, WIRE_BANDS).total), "bundles"],
+    ["Account package vs à-la-carte", "Payments Plus $2,500 vs $6,230", "saves " + fmt0(6230 - 2500) + " (60%)", "bundles"],
+    ["Entity bundle + overage", "Base $6,000 + 5 overage lines", fmt0(FE.pkg(6000, [{ allowance: 12000, used: 15000, overage: .05 }, { allowance: 300, used: 360, overage: 8 }, { allowance: 50, used: 65, overage: 20 }, { allowance: 40, used: 70, overage: 1 }, { allowance: 1, used: 2, overage: 400 }]).total), "bundles"],
+    ["Clubbing wires across entities", "80 + 60 + 120 + 140 = 400", fmt0(c.clubbed) + " (saves " + fmt0(c.saving) + ")", "bundles"],
+    ["Cross-product discount", "20% on $3,770", fmt0(3770 * .8) + " (saves " + fmt0(3770 * .2) + ")", "bundles"],
+    ["Reserve-adjusted ECR", "$9m collected · 10% reserve · 2.50%", "credit " + fmt(er.credit) + " → net $0", "ecr"],
+    ["Analysed account — net fee", "$20m @ 2.40%/12 vs $31,700", "net $0 · " + fmt0(es.unused) + " expires", "ecr"],
+    ["Balance-tiered ECR", "$25m · 1.75 / 2.25 / 2.75%", fmt(et.total), "ecr"],
+    ["Hybrid ECR + interest", "$14m bal · $10m threshold", "client value " + fmt(eh.clientValue), "ecr"],
+    ["Cash-mgmt account analysis", "12 accounts · gross $12,460", "net $0 (or " + fmt(Math.max(0, 12460 - FE.ecrReserve(4e6 / .9, .1, .025, 30, 365, 0).credit)) + " @ $4m)", "ecr"],
+    ["Payments month — channel mix", "ACH · RTGS · intl · pass-through", fmt0(pay.total) + " · optimise −" + fmt0(pay.optim), "liquidity"],
+    ["FX margin", "EUR 10m × 15 bps", "EUR " + num.format(15000) + " ≈ $16,200", "liquidity"],
+    ["Receivables bundle", "Setup 7,000 · 30k items", "M1 " + fmt0(8750) + " · steady " + fmt(1622.50), "liquidity"],
+    ["Virtual accounts", "500 VAs × $5", fmt0(2500) + "/mo", "liquidity"],
+    ["ZBA sweeps", "22 accounts × 30 days × $5 + $500", fmt0(3800) + "/mo", "liquidity"],
+    ["Notional pooling", "$18m offset · 6% vs 1.5%", "client net " + fmt(pool.net), "liquidity"],
+    ["Liquidity structures", "12 dom + 6 x-border accounts", "M1 " + fmt0(st.monthOne) + " · ongoing " + fmt0(st.ongoing), "liquidity"],
+    ["Import LC lifecycle", "$2m · 0.20%/qtr · 7 months", fmt0(lcA.total), "trade"],
+    ["Documentary credit", "$5m · 0.1875%/mo · 4 months", fmt0(lcB.total), "trade"],
+    ["Guarantee + amendment · loan · SCF", "$2m gtee · $1m loan · $1m SCF", fmt0(g.total) + " · " + fmt0(ln.total) + " · " + fmt0(FE.scf(1e6, 45, .07).total), "trade"],
+  ];
+}
+function secCases() {
+  const rows = casesData().map((c, i) =>
+    `<tr class="click" data-tab="${c[3]}"><td class="num" style="color:var(--faint)">${i + 1}</td><td><b>${c[0]}</b></td><td style="color:var(--mute)">${c[1]}</td><td class="r"><b>${c[2]}</b></td></tr>`).join("");
+  return `
+  <h2 class="sec">Business-case library</h2>
+  <p class="secsub">Every worked case from the master document, computed live by the engine at load — tap any row to open its calculator and change the inputs.</p>
+  <div class="card" style="padding:6px 4px">
+    <div class="scrollx"><table class="tbl">
+      <thead><tr><th>#</th><th>Business case</th><th>Key inputs</th><th class="r">Result (live)</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
+  </div>`;
+}
+
+/* ---------- Revenue ---------- */
+function secRevenue() {
+  return `
+  <h2 class="sec">Revenue model</h2>
+  <p class="secsub">Five economic buckets — modelled separately so the bank sees true relationship value, not just the invoice.</p>
+  <div class="grid g3">
+    ${[
+      ["Explicit fee income", "Setup, subscriptions, per-item, exceptions, statements, connectivity, receivables, trade commissions", "On the invoice"],
+      ["Balance income", "Deposit spread, analysed-balance economics, compensating balances, hybrid-ECR programmes", "Economic, not billed"],
+      ["Market income", "FX margins and cross-currency pricing", "Partly off-invoice"],
+      ["Financing income", "Trade loans, supply-chain finance, working-capital structures", "Interest / discount"],
+      ["Relationship income", "Wallet share, lower churn, operational dependence via bundles, APIs, VAs, reconciliation", "Hard to see, very real"],
+    ].map((b, i) => `<div class="card"><div class="eyebrow">Bucket ${i + 1}</div><h3>${b[0]}</h3><p class="sub">${b[1]}</p><div style="margin-top:10px"><span class="pill ${i === 1 || i === 4 ? "acc" : ""}">${b[2]}</span></div></div>`).join("")}
+  </div>
+
+  <h2 class="sec">Consolidated relationship revenue — live roll-up</h2>
+  <p class="secsub">One corporate group's illustrative month across families. Edit any line; the total recomputes.</p>
+  <div class="card">
+    <div class="fields">
+      ${field("rv_cash", "Cash mgmt net fees", 4240.82, "0.01")}
+      ${field("rv_fx", "FX margin", 16200)}
+      ${field("rv_liq", "Liquidity / pooling", 1979.45, "0.01")}
+      ${field("rv_trade", "Trade commissions", 4833.33, "0.01")}
+      ${field("rv_fin", "Financing income", 5833.33, "0.01")}
+      ${field("rv_rel", "Relationship / package", 10000)}
+    </div>
+    <div id="rv_out"></div>
+  </div>
+
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card"><h3>Economic vs billed</h3><p class="sub">A $0 invoice under ECR is not $0 revenue — the bank still earns the deposit spread. The engine maintains both ledgers and reports client value delivered (offset + surplus payout + credit interest) alongside billed revenue, so deals are approved on economic truth.</p></div>
+    <div class="card"><h3>Revenue assurance &amp; leakage</h3><p class="sub">Vendors estimate <b>3–8% of fee income</b> is lost to fragmented manual pricing: unbilled events, stale tariffs, mis-applied waivers, untracked commitments. On $1bn of services revenue that is <b>$30–80m a year</b> — attacked with complete metering, versioned rules, commitment tracking, anomaly detection and a closed billing-to-GL loop.</p></div>
+  </div>`;
+}
+function wireRevenue() {
+  onInputs(["rv_cash", "rv_fx", "rv_liq", "rv_trade", "rv_fin", "rv_rel"], () => {
+    const t = V("rv_cash") + V("rv_fx") + V("rv_liq") + V("rv_trade") + V("rv_fin") + V("rv_rel");
+    $("#rv_out").innerHTML = traceHTML("Relationship roll-up", [
+      { l: "Cash-management net fees", d: "after ECR on a $4m base", v: fmt(V("rv_cash")) },
+      { l: "FX margin", d: "EUR 10m × 15 bps ≈ USD", v: fmt(V("rv_fx")) },
+      { l: "Liquidity / pooling fees", v: fmt(V("rv_liq")) },
+      { l: "Trade commissions (blended)", v: fmt(V("rv_trade")) },
+      { l: "Financing income (loans + SCF)", v: fmt(V("rv_fin")) },
+      { l: "Relationship / package fees", v: fmt(V("rv_rel")) },
+      { l: "Total monthly relationship revenue", v: fmt(t), kind: "total good" },
+      { l: "The largest lines are FX and financing — not explicit cash-management fees. Price the whole relationship.", kind: "note" },
+    ]);
+  });
+}
+
+/* ---------- Reference ---------- */
+function secReference() {
+  const tax = [
+    ["Transactional (per-item)", "Per chargeable event", "Wires, ACH, RTP, lockbox items, sweeps, API calls"],
+    ["Periodic / subscription", "Time elapsed", "Account maintenance, platform fees, VA maintenance"],
+    ["Ad valorem", "% of value", "FX margin, trade commissions, cash handling"],
+    ["Tenor-based", "Rate × amount × time", "LC / guarantee commissions, financing interest"],
+    ["Balance-based", "Function of balances", "ECR offset, balance-formula fees, compensating balances"],
+    ["Event / exception", "Non-standard occurrence", "Repair, return, investigation, discrepancy, amendment"],
+    ["One-time / setup", "Onboarding / change", "Implementation, DACA legal, structure setup"],
+    ["Pass-through", "Third-party cost relay", "Correspondent charges, scheme fees, taxes"],
+  ];
+  const cm = [
+    ["Per-item", "volume × unit rate"],
+    ["Tiered (retroactive)", "reached-band rate × all units"],
+    ["Banded (marginal)", "Σ units-in-band × band rate"],
+    ["Ad valorem", "amount × rate, with min/max"],
+    ["Tenor-based", "amount × periodic rate × periods (part rounds up)"],
+    ["Balance-formula", "max(flat, avg balance × reference rate × day-count)"],
+    ["Channel differential", "rate keyed by channel + STP; exception surcharges"],
+    ["Pass-through", "third-party cost, itemised"],
+    ["Allowance / package", "base + Σ max(0, used − allowance) × overage"],
+  ];
+  const arch = [
+    ["1 · Contract & hierarchy", "Client, group, entity, account, VA, product and relationship mappings; deals, bundles, packages"],
+    ["2 · Product & service catalogue", "Tariffs, AFP service codes, country variants, tier tables — versioned reference data"],
+    ["3 · Usage metering", "Ingest events from every product system; normalise to service codes; idempotent"],
+    ["4 · Pricing decision engine", "Tariffs, deals, bundles, overrides, tiers, waivers — deterministic precedence"],
+    ["5 · Balance & ECR engine", "Eligible balances, thresholds, allowances, carry rules, tiered and hybrid treatment"],
+    ["6 · Billing & account-analysis", "Invoices, camt.086 / TWIST BSB statements, explanations, GL postings"],
+    ["7 · AI & analytics", "Simulation, anomaly detection, leakage, profitability — advisory only; calculation stays rule-based"],
+  ];
+  const road = [
+    ["Phase 0 · Foundations", "AFP service-code catalogue, hierarchy model, metering for payments + accounts"],
+    ["Phase 1 · MVP", "Per-item + periodic pricing, classic ECR, consolidated camt.086 statement — one bill, one debit"],
+    ["Phase 2 · Relationship", "Bundles, packages, clubbing, deals, precedence + pre-trade simulation"],
+    ["Phase 3 · Breadth", "Receivables, VAs, liquidity structures, trade & SCF; tiered & hybrid ECR"],
+    ["Phase 4 · Intelligence", "Anomaly detection, leakage analytics, profitability, next-best-bundle (advisory)"],
+  ];
+  return `
+  <h2 class="sec">Fee taxonomy — eight behavioural classes</h2>
+  <p class="secsub">Behaviour, not product label, determines the calculation path.</p>
+  <div class="card" style="padding:6px 4px"><div class="scrollx"><table class="tbl">
+    <thead><tr><th>Class</th><th>Trigger</th><th>Examples</th></tr></thead>
+    <tbody>${tax.map(t => `<tr><td><b>${t[0]}</b></td><td>${t[1]}</td><td style="color:var(--mute)">${t[2]}</td></tr>`).join("")}</tbody>
+  </table></div></div>
+
+  <h2 class="sec">Charging models — the computational primitives</h2>
+  <div class="card" style="padding:6px 4px"><div class="scrollx"><table class="tbl">
+    <thead><tr><th>Model</th><th>Formula</th></tr></thead>
+    <tbody>${cm.map(t => `<tr><td><b>${t[0]}</b></td><td class="num">${t[1]}</td></tr>`).join("")}</tbody>
+  </table></div></div>
+
+  <h2 class="sec">Parameter catalogue — price is data, never code</h2>
+  <div class="grid g3">
+    <div class="card"><h3>Pricing</h3><p class="sub">scope_level · service_code (AFP GSC) · charging_model · rate / bps · tier_table + mode · currency · country · channel + STP · min/max · period basis + proration · day-count (Act/365 · Act/360 · 30/360 · ÷12) · pass-through · effective dates + version</p></div>
+    <div class="card"><h3>Balance / ECR</h3><p class="sub">ecr_rate (or peg, e.g. 90-day T-bill) · reserve_factor · balance_basis · carry_rule (no-carry / carry-forward) · hybrid_mode (off / offset / +payout / +interest) · threshold_balance · credit_interest_rate</p></div>
+    <div class="card"><h3>Relationship</h3><p class="sub">deal / bundle / package id · benefit_type · stacking_mode (additive / best-of / selected / exclusive) · allowance + overage_rate · commitment {metric, target, period} · aggregation_group</p></div>
+  </div>
+
+  <h2 class="sec">Reference architecture — seven layers</h2>
+  <div class="ladder">
+    ${arch.map(a => `<div class="rung"><div><b>${a[0]}</b><br><span>${a[1]}</span></div></div>`).join("")}
+  </div>
+
+  <h2 class="sec">Roadmap</h2>
+  <div class="grid g2">
+    ${road.map(r => `<div class="card"><h3>${r[0]}</h3><p class="sub">${r[1]}</p></div>`).join("")}
+  </div>
+  <div class="card" style="margin-top:14px;background:var(--wash);border-color:#DDDDF8">
+    <h3>MVP definition of done</h3>
+    <p class="sub">A multi-account client receives one consolidated camt.086 account-analysis statement that meters every payment and account event, nets classic ECR, posts to the GL, and shows both billed and economic revenue — all from versioned, simulate-before-launch configuration. Everything else extends this spine.</p>
+  </div>
+  <h2 class="sec">Standards &amp; sources</h2>
+  <p class="secsub">ISO 20022 camt.086 / TWIST BSB billing statements · AFP Global Service Codes · camt.052/053/054 reporting · BCBS 248 intraday monitoring. Built on the public record of Citi, J.P. Morgan, HSBC, Standard Chartered, Goldman Sachs TxB, Morgan Stanley, Oracle ORMB, Zafin, Infosys Finacle, Trovata, HighRadius, Metronome and Orb — consolidated in the FeeOne master document and workbook.</p>`;
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+const SECTIONS = { overview: secOverview, ecr: secECR, bundles: secBundles, liquidity: secLiquidity, trade: secTrade, cases: secCases, revenue: secRevenue, reference: secReference };
+const WIRERS = { ecr: wireECR, bundles: wireBundles, liquidity: wireLiquidity, trade: wireTrade, revenue: wireRevenue };
+const built = {};
+
+function show(tab) {
+  $$("#nav button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === tab)));
+  $$('section[role="tabpanel"]').forEach(s => s.classList.toggle("on", s.id === "sec-" + tab));
+  if (!built[tab]) {
+    $("#sec-" + tab).innerHTML = SECTIONS[tab]();
+    if (WIRERS[tab]) WIRERS[tab]();
+    if (tab === "cases") {
+      $("#sec-cases").addEventListener("click", e => {
+        const tr = e.target.closest("tr.click");
+        if (tr) { show(tr.dataset.tab); window.scrollTo({ top: 0, behavior: "smooth" }); location.hash = tr.dataset.tab; }
+      });
+    }
+    built[tab] = true;
+  }
+  const nb = $(`#nav button[data-tab="${tab}"]`);
+  if (nb && nb.scrollIntoView) nb.scrollIntoView({ block: "nearest", inline: "center" });
+}
+
+(function init() {
+  const nav = $("#nav"), main = $("#main");
+  for (const [id, label] of TABS) {
+    const b = document.createElement("button");
+    b.role = "tab"; b.dataset.tab = id; b.textContent = label;
+    b.addEventListener("click", () => { show(id); location.hash = id; });
+    nav.appendChild(b);
+    const s = document.createElement("section");
+    s.id = "sec-" + id; s.setAttribute("role", "tabpanel");
+    main.appendChild(s);
+  }
+  const start = (location.hash || "").slice(1);
+  show(SECTIONS[start] ? start : "overview");
+  window.addEventListener("hashchange", () => {
+    const h = location.hash.slice(1);
+    if (SECTIONS[h]) show(h);
+  });
+})();
+
+</script>
+</body>
+</html>
