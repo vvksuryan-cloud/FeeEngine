@@ -5,7 +5,7 @@ A single-file, zero-dependency web app that captures the complete commercial log
 Every pricing rule a global transaction bank uses — earnings credit (ECR), tiered and banded pricing, bundles, clubbing, channel differentials, trade-finance commissions, relationship deals — implemented as interactive calculators with a Stripe-receipt-style resolution trace that shows exactly how every number is computed.
 
 
-🔢 6 pricing axes · 21 live business cases · 4 ECR models · 39 + 31 automated tests passed
+🔢 6 pricing axes · 21 live business cases · 4 ECR models · 39 + 31 automated tests passed.
 
 
 
